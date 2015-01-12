@@ -23,7 +23,7 @@ $j(document).ready(function() {
 	
 	var d = new Date();
 	if( d.getDate() == 5 && d.getMonth() == 7 ) {
-		$j('#header span').text('Sprint Wall - All Your Tasks Are Belong To Us!');
+		$j('#header span').text('Release Wall - All Your Tasks Are Belong To Us!');
 	}
 	
 	$j('#taskCategory').parent().append('&nbsp;<span id="categoryColour" class="nocategory">&nbsp;&nbsp;&nbsp;&nbsp;</span>');
