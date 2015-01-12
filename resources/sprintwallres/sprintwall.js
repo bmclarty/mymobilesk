@@ -23,7 +23,7 @@ $j(document).ready(function() {
 	
 	var d = new Date();
 	if( d.getDate() == 5 && d.getMonth() == 7 ) {
-		$j('#header span').text('Release Wall - All Your Tasks Are Belong To Us!');
+		$j('#header span').text('Release Wall');
 	}
 	
 	$j('#taskCategory').parent().append('&nbsp;<span id="categoryColour" class="nocategory">&nbsp;&nbsp;&nbsp;&nbsp;</span>');
@@ -86,7 +86,7 @@ $j(document).ready(function() {
         		$j('#teamList').append( '<option value="nowt">No Teams</option>' ).attr( 'disabled', 'disabled' );
         	}
         	else {
-        		$j('#teamList').append('<option value="" selected>-- All teams --</option>');
+        		$j('#teamList').append('<option value="" selected>-- All teams ---</option>');
         		$j.each(result, function(index, team) { 
             		$j('#teamList').append('<option value="' + team.Id + '">' + team.Name + '</option>');
             	});
@@ -222,7 +222,7 @@ function loadSprint() {
 	// clear out the main
 	$j('#main').empty();	
 	
-	showMsg( 'Loading...', 'The sprint is currently being loaded...', true );
+	showMsg( 'Loading...', 'The release is currently being loaded...', true );
 	SprintWallController.getSprint( sprintId, teamId, personId, categoryName, loadedSprint );
 }
 
@@ -233,13 +233,14 @@ function loadedSprint( result, event ) {
 		clearTaskData();
 		
 		if( result.Stories.length == 0 ) {
-			$j('#main').append( '<p>There are no stories to display!</p>' ); 
+			$j('#main').append( '<p>There is no release information to display!</p>' ); 
 		} else {
 			var html = 
 				'<table id="sprintWall"><thead><tr class="headerRow">' +
 				'	<th class="controlCol"></th>' +
 				'	<th class="storyCol">Story</th>' +
 				'	<th id="notStartedH">Not Started</th>' +
+				'	<th id="notStartedH">Planning</th>' +
 				'	<th id="inProgressH">In Progress</th>' +
 				'	<th id="completeH">Complete</th>' +
 				'	<th id="blockedH">Blocked</th>' +
@@ -247,6 +248,7 @@ function loadedSprint( result, event ) {
 		
 			$j.each(result.Stories, function(index, story) {
 				var notStarted = [];
+				var planning = [];
 				var inProgress = [];
 				var complete = [];
 				var blocked = [];
@@ -256,6 +258,8 @@ function loadedSprint( result, event ) {
 						notStarted.push( task );	
 					else if( task.Status == 'In Progress' )
 						inProgress.push( task );
+					else if( task.Status == 'Planning' )
+						planning.push( task );	
 					else if( task.Status == 'Completed' )
 						complete.push( task );
 					else if( task.Status == 'Blocked' )
@@ -267,6 +271,7 @@ function loadedSprint( result, event ) {
 				var lists = '';
 				lists = addTasksToList( notStarted, lists, 'notStarted', story );
 				lists = addTasksToList( inProgress, lists, 'inProgress', story );
+				lists = addTasksToList( planning, lists, 'planning', story );
 				lists = addTasksToList( complete, lists, 'complete', story );
 				lists = addTasksToList( blocked, lists, 'blocked', story );
 				
@@ -529,7 +534,7 @@ function taskCreatedOk() {
 function wireTaskViewButtonsUp() {
 	$j('.task .edit a').click( function() {
 		var taskId = $j(this).parent().parent().attr('id');
-		showMsg( 'Loading...', 'The task is currently being loaded...', true );
+		showMsg( 'Loading...', 'This project is currently being loaded...', true );
 		SprintWallController.getTaskForEdit( taskId, gotTaskForEdit );
 		return false;
 	});
@@ -560,7 +565,7 @@ function gotTaskForEdit( result, event ) {
 		
 		// now spin up the dialog
 		$j("#editTask").dialog({
-			title: 'Editing Task: ' + task.Name,
+			title: 'Editing Project: ' + task.Name,
 			height: 375,
 			width: 600,
 			modal: true,
@@ -586,7 +591,7 @@ function gotTaskForEdit( result, event ) {
 }
 
 function taskEditedOk() {
-	showMsg( 'Loading...', 'Saving task...', true );
+	showMsg( 'Loading...', 'Saving Project...', true );
 	
 	if( $j('#taskEst').val() == '' ) {
 		$j('#taskEst').val( 0 );
@@ -653,7 +658,7 @@ function getStoryMeta( story ) {
 	html += prop( 'team', story.Team );
 	html += prop( 'pointsalloc', story.PointsAlloc );
 	html += prop( 'view', '<a href="/' + story.Id + '" target="_blank" title="View"><img src="' + zoomImg + '" alt="" /></a>' );
-	html += prop( 'add', '<a href="#" title="Add task"><img src="' + addImg + '" alt="" /></a>' );
+	html += prop( 'add', '<a href="#" title="Add Project"><img src="' + addImg + '" alt="" /></a>' );
 	
 	return html;
 }
@@ -700,6 +705,8 @@ function taskCategory( task ) {
 function taskStatus( task ) {
 	if( task.Status == 'Not Started' )
 		return 'notStarted';
+	if( task.Status == 'Planning' )
+		return 'planning';
 	if( task.Status == 'In Progress' )
 		return 'inProgress';
 	if( task.Status == 'Completed' )
@@ -728,8 +735,8 @@ function taskContent( task, storyId ) {
 	html += prop( 'ownerinfo', '<img src="' + userAddImg + '" alt="" />' + prop( 'owner', owner ) ); 
 	html += prop( 'estimate', task.Estimate );
 	html += prop( 'remaining', task.Remaining );
-	html += prop( 'edit', '<a href="#" title="Edit"><img src="' + cogImg + '" alt="" /></a>' );
-	html += prop( 'view', '<a href="/' + task.Id + '" target="_blank" title="View"><img src="' + zoomImg + '" alt="" /></a>' );
+	html += prop( 'Edit', '<a href="#" title="Edit"><img src="' + cogImg + '" alt="" /></a>' );
+	html += prop( 'View', '<a href="/' + task.Id + '" target="_blank" title="View"><img src="' + zoomImg + '" alt="" /></a>' );
 	
 	return html;
 }
@@ -742,7 +749,7 @@ function populateSprintList() {
         	$j('#sprintList').removeAttr( 'disabled' ).find('option').remove().end();
         	
         	if( result.length == 0 ) {
-        		$j('#sprintList').append( '<option value="nowt">No Sprints</option>' ).attr( 'disabled', 'disabled' );
+        		$j('#sprintList').append( '<option value="nowt">No Releases</option>' ).attr( 'disabled', 'disabled' );
         	}
         	else {
 				var canPrime = false;
@@ -752,7 +759,7 @@ function populateSprintList() {
 					primedSprintId = match[1];
 				}
 	
-        		$j('#sprintList').append('<option value="" selected>Choose a sprint</option>');
+        		$j('#sprintList').append('<option value="" selected>Choose a Release</option>');
         		$j.each(result, function(index, sprint) { 
             		$j('#sprintList').append('<option value="' + sprint.Id + '">' + sprint.Name + '</option>');
 					if( primedSprintId !== undefined && sprint.Id.substring( 0, 15 ) == primedSprintId ) {
